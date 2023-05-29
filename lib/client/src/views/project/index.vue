@@ -2,7 +2,7 @@
     <main :class="['project-layout', { 'no-breadcrumb': !hasBreadcrumb, 'aside-folded': asideFolded, 'aside-hover': asideHover }]">
         <aside class="aside" v-if="!hideSideNav" @mouseenter="asideHover = true" @mouseleave="asideHover = false">
             <div class="side-hd">
-                <div class="open-select-menu-div" v-show="!asideFolded || asideHover">
+                <div class="open-select-menu-div" :class="{ 'show-select-project': !asideFolded || asideHover }">
                     <i class="back-icon bk-drag-icon bk-drag-arrow-back" title="返回应用列表" @click="toProjects"></i>
                     <select-project :project-list="projectList" />
                 </div>
@@ -17,6 +17,7 @@
                     :unique-opened="false"
                     :default-active="defaultActive"
                     :toggle-active="true"
+                    :before-nav-change="beforeNavChange"
                     v-bind="defaultThemeColorProps">
                     <bk-navigation-menu-item
                         v-for="(menuItem) in navList"
@@ -120,10 +121,10 @@
                     'item-default-bg-color': '#0E1525',
                     'item-active-color': '#FFF',
                     'item-active-bg-color': '#3A84FF',
-                    'item-hover-bg-color': '#3A4561',
+                    'item-hover-bg-color': '#262C3B',
                     'item-hover-color': '#FFF',
 
-                    'sub-menu-open-bg-color': '#000',
+                    'sub-menu-open-bg-color': '#0C1221',
                     
                     'item-default-icon-color': '#96A2B9',
                     'item-active-icon-color': '#FFF',
@@ -178,7 +179,6 @@
                 this.updateCurrentVersion(this.getInitialVersion())
                 bus.$on('update-project-version', this.updateCurrentVersion)
                 bus.$on('update-project-info', this.updateProjectInfo)
-                bus.$on('set-menu-active', this.setDefaultActive)
                 bus.$on('is-fold-aside', ({ isFold = false, showMenuFooter = true }) => {
                     this.asideFolded = isFold
                     this.showMenuFooter = showMenuFooter
@@ -233,6 +233,9 @@
             this.setDefaultActive()
         },
         methods: {
+            beforeNavChange () {
+                return false
+            },
             beforeShowPermissionDialog (e) {
                 e.preventDefault()
                 e.stopPropagation()
@@ -248,8 +251,6 @@
                 await this.setCurrentProject()
             },
             setDefaultActive () {
-                this.defaultActive = ''
-                // console.log('enter setactive', this.defaultActive)
                 let name = this.$route.name
                 
                 // 数据源管理子页面，左侧数据源管理依然高亮选中
@@ -403,9 +404,17 @@
                     cursor: pointer;
                 }
                 .open-select-menu-div {
+                    transition: width 0.2s ease-out, opacity 0.2s ease-in;
+                    visibility: hidden;
+                    opacity: 0;
+                    width: 0px;
+                }
+                .show-select-project {
                     display: flex;
                     align-items: center;
-                    transition: all .2s;
+                    visibility: visible;
+                    opacity: 1;
+                    width: 200px;
                 }
                 .fold-logo {
                     width: 32px;
@@ -565,9 +574,7 @@
             .menu-child{
                 .navigation-menu-item{
                     &:hover {
-                        background: #242838;
-                        /* background: #fff;
-                        opacity: 0.1; */
+                        background: #262C3B;
                     }
                 }
             }
